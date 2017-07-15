@@ -16,7 +16,7 @@ Currently implemented features:
 
 I'm using it along with [ReminderNotifier](https://github.com/bright-tools/ReminderNotifier) to display Outlook reminders, as on a multi-monitor display I find that the native Outlook reminder dialog just gets lost/overlooked (particularly with the recent behaviour whereby the Window does not always pop to the front).
 
-![Photo of mbed_lcd_hid in action](src/example.jpeg)
+![Photo of mbed_lcd_hid in action](pics/example.jpeg)
 
 ## Kit
 
