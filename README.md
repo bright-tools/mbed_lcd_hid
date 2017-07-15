@@ -12,6 +12,9 @@ Currently implemented features:
 * Pulsing of LCD for new messages, cancelled via a swipe of the position sensor
 * Configurable LCD contrast (via the "up" and "down" buttons on the LCD shield)
 
+What's next:
+* Small message history browsable via the "back" and "forward" buttons
+
 ## Uses
 
 I'm using it along with [ReminderNotifier](https://github.com/bright-tools/ReminderNotifier) to display Outlook reminders, as on a multi-monitor display I find that the native Outlook reminder dialog just gets lost/overlooked (particularly with the recent behaviour whereby the Window does not always pop to the front).
