@@ -158,7 +158,7 @@ int main() {
     }
 
     //try to read a msg
-    if(hid.readNB(&recv_report)) {
+    while(hid.readNB(&recv_report)) {
         unsigned destRow = 0;
         if( recv_report.data[0] == 1 )
         {
