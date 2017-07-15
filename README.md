@@ -22,4 +22,4 @@ I'm using it along with [ReminderNotifier](https://github.com/bright-tools/Remin
 
 I'm using:
 * [NXP FRDM-KL46Z](https://developer.mbed.org/platforms/FRDM-KL46Z/)
-* [Robot LCD Shielf](https://www.dfrobot.com/product-51.html)
+* [Robot LCD Shield](https://www.dfrobot.com/product-51.html)
