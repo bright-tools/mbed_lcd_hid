@@ -6,7 +6,9 @@
 Serial pc(USBTX, USBRX); // tx, rx
 #endif
 
+#define MAX_ROW_DISPLAY 16
 #define MAX_ROW_LEN 40
+#define SCROLL_PAUSE 10
 
 USBHID hid(MAX_ROW_LEN + 2, MAX_ROW_LEN + 2, 0x1987, 0x1100);
 
@@ -23,6 +25,7 @@ size_t maxDataLen;
 bool newData = false;
 unsigned lcdPos = 0;
 bool pulsing = false;
+unsigned scrollPauseCtr = 0;
 
 void lcdRefresh( void )
 {
@@ -31,6 +34,7 @@ void lcdRefresh( void )
         size_t i;
 
         lcdPos = 0;
+        scrollPauseCtr = 0;
         lx.cls();
         lx.setCursorPosition(0,0);
         lx.printf(lcdData[0]);
@@ -45,19 +49,27 @@ void lcdRefresh( void )
         newData = false;
         pulsing = true;
     }
-    else if( maxDataLen > MAX_ROW_LEN )
+    else if( maxDataLen > MAX_ROW_DISPLAY )
     {
-        lx.shift(true);
-        lcdPos = (lcdPos + 1) % MAX_ROW_LEN;
-
-        /* Is it a short string and we've not got to the position where the
-         * display is wrapping back round? */
-        if(( lcdPos > maxDataLen) && ( lcdPos < (MAX_ROW_LEN-16)))
+        if( scrollPauseCtr < SCROLL_PAUSE )
         {
-            /* Return home so that the user isn't waiting for the display to
-             * scroll through a load of empty space */
-            lx.home();
-            lcdPos = 0;
+            scrollPauseCtr++;
+        } 
+        else 
+        {
+            lx.shift(true);
+            lcdPos = (lcdPos + 1) % MAX_ROW_LEN;
+
+            /* Is it a short string and we've not got to the position where the
+             * display is wrapping back round? */
+            if(( lcdPos > maxDataLen) && ( lcdPos < (MAX_ROW_LEN-MAX_ROW_DISPLAY)))
+            {
+                /* Return home so that the user isn't waiting for the display to
+                 * scroll through a load of empty space */
+                lx.home();
+                lcdPos = 0;
+                scrollPauseCtr = 0;
+            }
         }
     }
 }
