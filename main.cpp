@@ -1,6 +1,7 @@
 #include "mbed.h"
 #include "freetronicsLCDShield.h"
 #include "USBHID.h"
+#include "TSISensor.h"
 
 #if defined SERIAL_DEBUG
 Serial pc(USBTX, USBRX); // tx, rx
@@ -26,6 +27,7 @@ bool newData = false;
 unsigned lcdPos = 0;
 bool pulsing = false;
 unsigned scrollPauseCtr = 0;
+TSISensor   tsi;
 
 void lcdRefresh( void )
 {
@@ -82,7 +84,12 @@ void watchButtons( void )
 {
     freetronicsLCDShield::ShieldButton currentButton = lx.pressedButton();
     float backLightVal;
-    
+   
+    if( tsi.readPercentage() )
+    {
+        pulsing = false;
+    }
+
     if( lastButton == freetronicsLCDShield::None )
     {
         switch( currentButton ) {
@@ -97,9 +104,6 @@ void watchButtons( void )
             {
                 currentBacklight -= 0.1;
             }
-            break;
-        case freetronicsLCDShield::Left:
-            pulsing = false;
             break;
         }
     }
