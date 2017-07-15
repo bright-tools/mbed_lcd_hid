@@ -45,7 +45,7 @@ void lcdRefresh( void )
         newData = false;
         pulsing = true;
     }
-    else
+    else if( maxDataLen > MAX_ROW_LEN )
     {
         lx.shift(true);
         lcdPos = (lcdPos + 1) % MAX_ROW_LEN;
