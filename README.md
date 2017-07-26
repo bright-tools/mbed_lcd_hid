@@ -9,7 +9,7 @@ The mbed board acts as a HID meaning that no special USB drivers are required.  
 Currently implemented features:
 * Scrolling of messages too long to fit on the display
 * Pause before scrolling to allow start of message to be read
-* Pulsing of LCD for new messages, cancelled via a swipe of the position sensor
+* Pulsing of LCD for new messages, cancelled via a swipe of the touch/position sensor (on the Freedom Board, not the shield)
 * Configurable LCD contrast (via the "up" and "down" buttons on the LCD shield)
 
 What's next:
