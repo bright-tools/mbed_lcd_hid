@@ -74,7 +74,7 @@ int main() {
     RoundRobin::instance()->addTask( BUTTON_WATCH_MULTIPLE, watchButtons );
     
     lcdInterface.setString( 0, "mbed LCD HID" );
-    lcdInterface.setString( 1, "github.com/bright-tools/mbed_lcd_hidJABBAJABBAJABBA" );
+    lcdInterface.setString( 1, "github.com/bright-tools/mbed_lcd_hid" );
 
     while(true) {
 #if defined SERIAL_DEBUG
