@@ -19,7 +19,8 @@ class LCDIf
             ScrollEffectDefault,
             ScrollEffectBackToStart,
             ScrollEffectWrap,
-            ScrollEffectWrapWithSpace
+            ScrollEffectWrapWithSpace,
+            ScrollEffectReverseAtEnd
         } ScrollEffect_t;
     protected:
         bool newData;
@@ -29,18 +30,19 @@ class LCDIf
         uint32_t sleepTimer;
         size_t maxDataLen;
         bool pulsing;
+        bool forwardDirectionScroll;
         unsigned pulseVal;
         float currentBacklight;
         char lcdData[2][MAX_ROW_LEN+1];
         ScrollEffect_t currentScrollEffect;
         freetronicsLCDShield& m_shield;
-        Mutex memberDataMutex;
 
         float calcPulseBackLight( void );
         void setBackLight( void );
 
         bool DoScrollWrap( void );
         bool DoScrollBackToStart( void );
+        bool DoScrollReverseAtEnd( void );
         void doShift( void );
     public:
 

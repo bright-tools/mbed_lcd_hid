@@ -5,8 +5,9 @@ LCDIf::LCDIf( freetronicsLCDShield& p_shield ) : newData( false ), lcdPos( 0 ),
                                                  resetPauseCtr( 0 ),
                                                  scrollPauseCtr( 0 ), sleepTimer( 0 ),
                                                  maxDataLen( 0 ), pulsing( false ),
+                                                 forwardDirectionScroll( true ),
                                                  pulseVal( 0 ), currentBacklight( 0.2 ),
-                                                 currentScrollEffect( ScrollEffectWrap ),
+                                                 currentScrollEffect( ScrollEffectReverseAtEnd ),
                                                  m_shield( p_shield )
 {
     memset( lcdData, 0, sizeof( lcdData ));
@@ -23,16 +24,12 @@ LCDIf::~LCDIf( void )
 
 void LCDIf::resetSleepTimer( void )
 {
-    memberDataMutex.lock();
     sleepTimer = SLEEP_TIME / LCD_REFRESH_RATE;
-    memberDataMutex.unlock();
 }
 
 void LCDIf::decrementSleepTimer( void )
 {
-    memberDataMutex.lock();
     sleepTimer--;
-    memberDataMutex.unlock();
 }
 
 bool LCDIf::DoScrollWrap( void )
@@ -61,8 +58,6 @@ bool LCDIf::DoScrollBackToStart( void )
 {
     bool doScroll = false;
 
-    /* Is it a short string and we've not got to the position where the
-     * display is wrapping back round? */
     if( lcdPos >= (maxDataLen-MAX_ROW_DISPLAY))
     {
         if( resetPauseCtr < RESET_PAUSE )
@@ -87,29 +82,62 @@ bool LCDIf::DoScrollBackToStart( void )
     return doScroll;
 }
 
+bool LCDIf::DoScrollReverseAtEnd( void )
+{
+    bool doScroll = false;
+
+    if( forwardDirectionScroll )
+    {
+        if( lcdPos >= (maxDataLen-MAX_ROW_DISPLAY))
+        {
+            forwardDirectionScroll = false;
+        }
+        else
+        {
+            doScroll = true;
+        }
+    }
+    else
+    {
+        m_shield.shift(false);
+        lcdPos--;
+        if( lcdPos == 0 )
+        {
+            forwardDirectionScroll = true;
+        }
+    }
+
+    return doScroll;
+}
+
 void LCDIf::refresh( void )
 {
     if( newData )
     {
         size_t i;
+        
+        if( currentScrollEffect == ScrollEffectWrapWithSpace )
+        {
+            lcdData[0][MAX_ROW_LEN-1] = lcdData[1][MAX_ROW_LEN-1] = ' ';
+        }
 
         lcdPos = 0;
         scrollPauseCtr = 0;
         m_shield.cls();
         m_shield.setCursorPosition(0,0);
-        memberDataMutex.lock();
         m_shield.printf(lcdData[0]);
         maxDataLen = strnlen( lcdData[0], MAX_ROW_LEN );
         m_shield.setCursorPosition(1,0);
         m_shield.printf(lcdData[1]);
         i = strnlen( lcdData[1], MAX_ROW_LEN );
+
         if( i > maxDataLen )
         {
             maxDataLen = i;
         }
         newData = false;
-        memberDataMutex.unlock();
         pulsing = true;
+        forwardDirectionScroll = true;
         resetSleepTimer();
     }
     /* Is it a string that needs to be scrolled? */
@@ -131,6 +159,9 @@ void LCDIf::refresh( void )
                 case ScrollEffectWrapWithSpace:
                 case ScrollEffectWrap:
                     doScroll = DoScrollWrap();
+                    break;
+                case ScrollEffectReverseAtEnd:
+                    doScroll = DoScrollReverseAtEnd();
                     break;
             }
 
