@@ -34,6 +34,7 @@ void watchButtons( void )
     if( tsi.readPercentage() )
     {
         lcdInterface.stopPulsing();
+        lcdInterface.resetSleepTimer();
     }
 
     if( lastButton == freetronicsLCDShield::None )
@@ -72,7 +73,8 @@ int main() {
     RoundRobin::instance()->addTask( LCD_REFRESH_MULTIPLE, lcdRefresh );
     RoundRobin::instance()->addTask( BUTTON_WATCH_MULTIPLE, watchButtons );
     
-    lcdInterface.setString( 0, "* Hello * This is a very long str" );
+    lcdInterface.setString( 0, "mbed LCD HID" );
+    lcdInterface.setString( 1, "github.com/bright-tools/mbed_lcd_hidJABBAJABBAJABBA" );
 
     while(true) {
 #if defined SERIAL_DEBUG
