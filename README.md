@@ -9,13 +9,20 @@ The mbed board acts as a HID meaning that no special USB drivers are required.  
 Currently implemented features:
 * Scrolling of messages too long to fit on the display
 * Pause before scrolling to allow start of message to be read
-* Pulsing of LCD for new messages, cancelled via a swipe of the position sensor
+* Pulsing of LCD for new messages, cancelled via a swipe of the touch/position sensor (on the Freedom Board, not the shield)
 * Configurable LCD contrast (via the "up" and "down" buttons on the LCD shield)
 
+What's next:
+* Small message history browsable via the "back" and "forward" buttons
+
+## Uses
+
 I'm using it along with [ReminderNotifier](https://github.com/bright-tools/ReminderNotifier) to display Outlook reminders, as on a multi-monitor display I find that the native Outlook reminder dialog just gets lost/overlooked (particularly with the recent behaviour whereby the Window does not always pop to the front).
+
+![Photo of mbed_lcd_hid in action](pics/example.jpeg)
 
 ## Kit
 
 I'm using:
 * [NXP FRDM-KL46Z](https://developer.mbed.org/platforms/FRDM-KL46Z/)
-* [Robot LCD Shielf](https://www.dfrobot.com/product-51.html)
+* [Robot LCD Shield](https://www.dfrobot.com/product-51.html)
