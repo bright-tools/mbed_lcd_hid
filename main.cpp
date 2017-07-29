@@ -4,11 +4,12 @@
 #include "TSISensor.h"
 #include "time_help.hpp"
 #include "lcd.hpp"
+#include "RoundRobin.hpp"
 
+#define SERIAL_DEBUG
 #if defined SERIAL_DEBUG
 Serial pc(USBTX, USBRX); // tx, rx
 #endif
-
 
 USBHID hid(MAX_ROW_LEN + 2, MAX_ROW_LEN + 2, 0x1987, 0x1100);
 
@@ -21,7 +22,6 @@ freetronicsLCDShield lx(D8, D9,
 
 LCDIf lcdInterface( lx );
 
-Ticker lcdUpdate;
 TSISensor   tsi;
 
 Ticker buttonWatcher;
@@ -68,13 +68,10 @@ int main() {
     pc.printf("Hello");
 #endif
 
-    EventQueue eventQueue;
-    Thread lcdThread(osPriorityLow);
-    lcdThread.start(callback(&eventQueue, &EventQueue::dispatch_forever));
-
-    lcdUpdate.attach( eventQueue.event(&lcdRefresh), LCD_REFRESH_RATE );
-    buttonWatcher.attach( watchButtons, BUTTON_WATCH_RATE );
-
+    RoundRobin::instance()->SetBaseRate( BASE_RATE );
+    RoundRobin::instance()->addTask( LCD_REFRESH_MULTIPLE, lcdRefresh );
+    RoundRobin::instance()->addTask( BUTTON_WATCH_MULTIPLE, watchButtons );
+    
     lcdInterface.setString( 0, "* Hello * This is a very long str" );
 
     while(true) {
