@@ -1,20 +1,21 @@
+#include "time_help.hpp"
+#include "lcd.hpp"
+#include "history.hpp"
+
 #include "mbed.h"
 #include "freetronicsLCDShield.h"
 #include "USBHID.h"
 #include "TSISensor.h"
-#include "time_help.hpp"
-#include "lcd.hpp"
 #include "RoundRobin.hpp"
 
-#define SERIAL_DEBUG
 #if defined SERIAL_DEBUG
 Serial pc(USBTX, USBRX); // tx, rx
 #endif
 
-USBHID hid(MAX_ROW_LEN + 2, MAX_ROW_LEN + 2, 0x1987, 0x1100);
+#define HID_SEND_REPORT_LEN 64U
+#define HID_RECV_REPORT_LEN HID_SEND_REPORT_LEN
 
-HID_REPORT recv_report;
-HID_REPORT send_report;
+USBHID hid(HID_SEND_REPORT_LEN, HID_RECV_REPORT_LEN, 0x1987U, 0x1100U);
 
 freetronicsLCDShield lx(D8, D9, 
                         D4, D5, D6, D7, 
@@ -26,6 +27,27 @@ TSISensor   tsi;
 
 Ticker buttonWatcher;
 freetronicsLCDShield::ShieldButton lastButton = freetronicsLCDShield::None;
+
+uint32_t currentMessageId = UINT32_MAX;
+
+void displayMessage( const DisplayMessage_t* const p_msg )
+{
+    currentMessageId = p_msg->id;
+
+    for( unsigned i = 0; i < MAX_ROW_COUNT; i++ )
+    {
+        lcdInterface.setString(i ,p_msg->lines[i].c_str());
+    }
+}
+
+void showMessageFromHistory( const Offset_t p_offset )
+{
+    const DisplayMessage_t* const msg = getMessage( currentMessageId, p_offset );
+    if( msg != NULL )
+    {
+        displayMessage( msg );
+    }
+}
 
 void watchButtons( void )
 {
@@ -51,6 +73,12 @@ void watchButtons( void )
             case freetronicsLCDShield::Down:
                 lcdInterface.decrementBackLight();
                 break;
+            case freetronicsLCDShield::Right:
+                showMessageFromHistory( OFFSET_AFTER );
+                break;
+            case freetronicsLCDShield::Left:
+                showMessageFromHistory( OFFSET_BEFORE );
+                break;
             default:
                 break;
         }
@@ -64,6 +92,71 @@ void lcdRefresh( void )
     lcdInterface.refresh();
 }
 
+#define MESSAGE_ID_NEW_MESSAGE 0x10U
+#define MESSAGE_ID_REMOVE_MESSAGE 0x20U
+
+void handleRemoveMessage( const uint8_t* const p_data )
+{
+}
+
+void handleNewMessage( const uint8_t* const p_data )
+{
+    uint32_t id = (uint32_t)p_data[0] |
+                  (uint32_t)p_data[1] |
+                  (uint32_t)p_data[2] |
+                  (uint32_t)p_data[3];
+    unsigned row = p_data[4];
+    char strBuffer[ MAX_ROW_LEN + 1 ];
+    DisplayMessage_t newMessage;
+    DisplayMessage_t* msgPtr;
+
+#if defined SERIAL_DEBUG
+    pc.printf("NewMessage, id is %04x row is %d\r\n",id,row);
+    for( unsigned i = 0; i < 60 ; i++ )
+    {
+        pc.printf("%02x ",p_data[i]);
+    }
+    pc.printf("\r\n");
+#endif
+
+    if( row < MAX_ROW_COUNT )
+    {
+        if( msgPtr = getMessage( id, OFFSET_NONE ))
+        {
+#if defined SERIAL_DEBUG
+            pc.printf("Found an existing message\n");
+#endif
+            newMessage = *msgPtr;
+        }
+
+        strncpy( strBuffer, (const char*)(&(p_data[ 14 ])), MAX_ROW_LEN );
+        strBuffer[ MAX_ROW_LEN ] = 0;
+    
+        newMessage.id = id;
+        newMessage.lines[row] = strBuffer;
+        addMessage( &newMessage );
+
+        displayMessage( &newMessage );
+    }
+}
+
+void handleReport( HID_REPORT* recv_report )
+{
+#if defined SERIAL_DEBUG
+    pc.printf("Message received with message type %02x\r\n",recv_report->data[0]);
+#endif
+
+    switch( recv_report->data[0] )
+    {
+        case MESSAGE_ID_NEW_MESSAGE:
+            handleNewMessage( &(recv_report->data[1]) );
+            break;
+        case MESSAGE_ID_REMOVE_MESSAGE:
+            handleRemoveMessage( &(recv_report->data[1]) );
+            break;
+    }
+}
+
 int main() {
 #if defined SERIAL_DEBUG
     pc.printf("Hello");
@@ -73,36 +166,45 @@ int main() {
     RoundRobin::instance()->addTask( LCD_REFRESH_MULTIPLE, lcdRefresh );
     RoundRobin::instance()->addTask( BUTTON_WATCH_MULTIPLE, watchButtons );
     
+#if 0
+    DisplayMessage_t test;
+    test.id = 1;
+    test.lines[0] = "Hello";
+    test.lines[1] = "There";
+    addMessage( &test );
+    test.id = 2;
+    test.lines[0] = "This is a test";
+    test.lines[1] = "Of the interface history";
+    addMessage( &test );
+#endif
+
     lcdInterface.setString( 0, "mbed LCD HID" );
     lcdInterface.setString( 1, "github.com/bright-tools/mbed_lcd_hid" );
 
     while(true) {
+        HID_REPORT recv_report;
+
 #if defined SERIAL_DEBUG
         pc.printf("+");
 #endif
 
-        send_report.length = MAX_ROW_LEN + 2;
-        //Send the report
-        hid.send(&send_report);
-
-        //Fill the report
-        for (unsigned i = 0; i < send_report.length; i++)
-        {
-            send_report.data[i] = rand() & 0xff;
-        }
-
         //try to read a msg
         while(hid.readNB(&recv_report)) {
-            unsigned destRow = 0;
-            if( recv_report.data[0] == 1 )
-            {
-                destRow = 1;
-            }
-#if defined SERIAL_DEBUG
-            pc.printf("Message received for %d\r\n",destRow);
-#endif
-            lcdInterface.setString(destRow,(char*)(&(recv_report.data[1])));
+            handleReport( &recv_report );
         }
+
+    HID_REPORT send_report;
+
+
+            send_report.length = 64;
+    //Send the report
+    hid.send(&send_report);
+
+    //Fill the report
+    for (unsigned i = 0; i < send_report.length; i++)
+    {
+        send_report.data[i] = rand() & 0xff;
+    }
 
 #if defined SERIAL_DEBUG
         pc.printf("Button State: %f %d\r\n",lx.readButton(),lx.pressedButton());

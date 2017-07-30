@@ -7,12 +7,11 @@ Display notifications received via [USB HID](https://en.wikipedia.org/wiki/USB_h
 The mbed board acts as a HID meaning that no special USB drivers are required.  The host PC is then able to send messages to the mbed board in order to display text on the LCD.
 
 Currently implemented features:
-* Scrolling of messages too long to fit on the display
+* Scrolling of messages too long to fit on the display (several different scroll effects available)
 * Pause before scrolling to allow start of message to be read
-* Pulsing of LCD for new messages, cancelled via a swipe of the touch/position sensor (on the Freedom Board, not the shield)
+* Pulsing of LCD for new messages, dismissed via a swipe of the touch/position sensor (on the Freedom Board, not the shield)
 * Configurable LCD contrast (via the "up" and "down" buttons on the LCD shield)
-
-What's next:
+* Turn off LCD backlight a configured duration after the current message was dismissed
 * Small message history browsable via the "back" and "forward" buttons
 
 ## Uses
