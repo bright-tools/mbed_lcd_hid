@@ -10,19 +10,29 @@ extern Serial pc;
 
 std::list<DisplayMessage_t> messageHistory;
 
-void addMessage( const DisplayMessage_t* const p_message )
+bool removeMessage( const uint32_t p_id )
 {
-    /* If the message is already in the history, remove it */
+    bool retVal = false;
+
     for( std::list<DisplayMessage_t>::iterator i = messageHistory.begin();
          i != messageHistory.end();
          i++ )
     {
-        if( p_message->id == i->id )
+        if( i->id == p_id )
         {
             messageHistory.erase( i );
+            retVal = true;
             break;
         }
     }
+
+    return retVal;
+}
+
+void addMessage( const DisplayMessage_t* const p_message )
+{
+    /* If the message is already in the history, remove it */
+    removeMessage( p_message->id );
 
     /* Add the message to the back of the history list */
     messageHistory.push_back( *p_message );

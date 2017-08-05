@@ -40,13 +40,16 @@ void displayMessage( const DisplayMessage_t* const p_msg )
     }
 }
 
-void showMessageFromHistory( const Offset_t p_offset )
+bool showMessageFromHistory( const Offset_t p_offset )
 {
     const DisplayMessage_t* const msg = getMessage( currentMessageId, p_offset );
+    bool retVal = false;
     if( msg != NULL )
     {
         displayMessage( msg );
+        retVal = true;
     }
+    return retVal;
 }
 
 void watchButtons( void )
@@ -92,11 +95,43 @@ void lcdRefresh( void )
     lcdInterface.refresh();
 }
 
+void showBanner( void )
+{
+    lcdInterface.setString( 0, "mbed LCD HID" );
+    lcdInterface.setString( 1, "github.com/bright-tools/mbed_lcd_hid" );
+    lcdInterface.stopPulsing();
+}
+
 #define MESSAGE_ID_NEW_MESSAGE 0x10U
 #define MESSAGE_ID_REMOVE_MESSAGE 0x20U
 
 void handleRemoveMessage( const uint8_t* const p_data )
 {
+    uint32_t id = (uint32_t)p_data[0] |
+                  (uint32_t)p_data[1] |
+                  (uint32_t)p_data[2] |
+                  (uint32_t)p_data[3];
+
+#if defined SERIAL_DEBUG
+    pc.printf("RemoveMessage, id is %04x\r\n",id);
+#endif
+
+    /* Have we removed the message currently displayed? */
+    if( id == currentMessageId )
+    {
+#if defined SERIAL_DEBUG
+        pc.printf("That's the current message!\r\n");
+#endif
+        if( !showMessageFromHistory( OFFSET_BEFORE ) )
+        {
+            if( !showMessageFromHistory( OFFSET_AFTER ) )
+            {
+                showBanner();
+            }
+        }
+    }
+    
+    removeMessage( id );
 }
 
 void handleNewMessage( const uint8_t* const p_data )
@@ -112,11 +147,13 @@ void handleNewMessage( const uint8_t* const p_data )
 
 #if defined SERIAL_DEBUG
     pc.printf("NewMessage, id is %04x row is %d\r\n",id,row);
+#if 0
     for( unsigned i = 0; i < 60 ; i++ )
     {
         pc.printf("%02x ",p_data[i]);
     }
     pc.printf("\r\n");
+#endif
 #endif
 
     if( row < MAX_ROW_COUNT )
@@ -178,8 +215,7 @@ int main() {
     addMessage( &test );
 #endif
 
-    lcdInterface.setString( 0, "mbed LCD HID" );
-    lcdInterface.setString( 1, "github.com/bright-tools/mbed_lcd_hid" );
+    showBanner();
 
     while(true) {
         HID_REPORT recv_report;
