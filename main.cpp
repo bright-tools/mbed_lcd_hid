@@ -38,6 +38,8 @@ void displayMessage( const DisplayMessage_t* const p_msg )
     {
         lcdInterface.setString(i ,p_msg->lines[i].c_str());
     }
+
+    lcdInterface.setPulsing( !( p_msg->dismissed ) );
 }
 
 bool showMessageFromHistory( const Offset_t p_offset )
@@ -58,7 +60,12 @@ void watchButtons( void )
    
     if( tsi.readPercentage() )
     {
-        lcdInterface.stopPulsing();
+        DisplayMessage_t* msg = getMessage( currentMessageId, OFFSET_NONE );
+        if( msg != NULL )
+        {
+            msg->dismissed = true;
+        }
+        lcdInterface.setPulsing(false);
         lcdInterface.resetSleepTimer();
     }
 
@@ -99,7 +106,7 @@ void showBanner( void )
 {
     lcdInterface.setString( 0, "mbed LCD HID" );
     lcdInterface.setString( 1, "github.com/bright-tools/mbed_lcd_hid" );
-    lcdInterface.stopPulsing();
+    lcdInterface.setPulsing( false );
 }
 
 #define MESSAGE_ID_NEW_MESSAGE 0x10U
@@ -161,7 +168,7 @@ void handleNewMessage( const uint8_t* const p_data )
         if( msgPtr = getMessage( id, OFFSET_NONE ))
         {
 #if defined SERIAL_DEBUG
-            pc.printf("Found an existing message\n");
+            pc.printf("Found an existing message\r\n");
 #endif
             newMessage = *msgPtr;
         }
@@ -170,10 +177,12 @@ void handleNewMessage( const uint8_t* const p_data )
         strBuffer[ MAX_ROW_LEN ] = 0;
     
         newMessage.id = id;
+        newMessage.dismissed = false;
         newMessage.lines[row] = strBuffer;
         addMessage( &newMessage );
 
         displayMessage( &newMessage );
+        lcdInterface.resetSleepTimer();
     }
 }
 

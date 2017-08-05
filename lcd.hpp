@@ -59,7 +59,7 @@ class LCDIf
 
         void setString( unsigned p_row, const char* const p_data );
 
-        void stopPulsing( void );
+        void setPulsing( const bool p_pulse );
 
         void refresh( void );
 };

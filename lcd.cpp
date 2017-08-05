@@ -136,7 +136,6 @@ void LCDIf::refresh( void )
             maxDataLen = i;
         }
         newData = false;
-        pulsing = true;
         forwardDirectionScroll = true;
         resetSleepTimer();
     }
@@ -244,9 +243,9 @@ void LCDIf::decrementBackLight( void )
     }
 }
 
-void LCDIf::stopPulsing( void )
+void LCDIf::setPulsing( const bool p_pulse )
 {
-    pulsing = false;
+    pulsing = p_pulse;
 }
         
 void LCDIf::setString( unsigned p_row, const char* const p_data )

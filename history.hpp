@@ -17,6 +17,7 @@ typedef enum
 typedef struct
 {
     uint32_t    id;
+    bool        dismissed;
     std::string lines[MAX_ROW_COUNT];
 } DisplayMessage_t;
 
