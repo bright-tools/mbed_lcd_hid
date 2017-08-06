@@ -7,7 +7,7 @@ LCDIf::LCDIf( freetronicsLCDShield& p_shield ) : newData( false ), lcdPos( 0 ),
                                                  maxDataLen( 0 ), pulsing( false ),
                                                  forwardDirectionScroll( true ),
                                                  pulseVal( 0 ), currentBacklight( 0.2 ),
-                                                 currentScrollEffect( ScrollEffectReverseAtEnd ),
+                                                 currentScrollEffect( ScrollEffectWrap ),
                                                  m_shield( p_shield )
 {
     memset( lcdData, 0, sizeof( lcdData ));

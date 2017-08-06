@@ -123,22 +123,31 @@ void handleRemoveMessage( const uint8_t* const p_data )
     pc.printf("RemoveMessage, id is %04x\r\n",id);
 #endif
 
-    /* Have we removed the message currently displayed? */
-    if( id == currentMessageId )
+    if( id == UINT32_MAX )
     {
-#if defined SERIAL_DEBUG
-        pc.printf("That's the current message!\r\n");
-#endif
-        if( !showMessageFromHistory( OFFSET_BEFORE ) )
+        removeAllMessages();
+        showBanner();
+        currentMessageId = UINT32_MAX;
+    }
+    else
+    {
+        /* Have we removed the message currently displayed? */
+        if( id == currentMessageId )
         {
-            if( !showMessageFromHistory( OFFSET_AFTER ) )
+#if defined SERIAL_DEBUG
+            pc.printf("That's the current message!\r\n");
+#endif
+            if( !showMessageFromHistory( OFFSET_BEFORE ) )
             {
-                showBanner();
+                if( !showMessageFromHistory( OFFSET_AFTER ) )
+                {
+                    showBanner();
+                }
             }
         }
-    }
     
-    removeMessage( id );
+        removeMessage( id );
+    }
 }
 
 void handleNewMessage( const uint8_t* const p_data )

@@ -10,6 +10,11 @@ extern Serial pc;
 
 std::list<DisplayMessage_t> messageHistory;
 
+void removeAllMessages( void )
+{
+    messageHistory.clear();
+}
+
 bool removeMessage( const uint32_t p_id )
 {
     bool retVal = false;
