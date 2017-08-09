@@ -16,9 +16,10 @@ typedef enum
 
 typedef struct
 {
-    uint32_t    id;
-    bool        dismissed;
-    std::string lines[MAX_ROW_COUNT];
+    uint32_t              id;
+    bool                  dismissed;
+    std::string           lines[MAX_ROW_COUNT];
+    LCDIf::ScrollEffect_t scrollEffect;
 } DisplayMessage_t;
 
 void              addMessage( const DisplayMessage_t* const p_message );

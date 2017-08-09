@@ -39,6 +39,7 @@ void displayMessage( const DisplayMessage_t* const p_msg )
         lcdInterface.setString(i ,p_msg->lines[i].c_str());
     }
 
+    lcdInterface.setScrollEffect( p_msg->scrollEffect );
     lcdInterface.setPulsing( !( p_msg->dismissed ) );
 }
 
@@ -188,6 +189,7 @@ void handleNewMessage( const uint8_t* const p_data )
         newMessage.id = id;
         newMessage.dismissed = false;
         newMessage.lines[row] = strBuffer;
+        newMessage.scrollEffect = (LCDIf::ScrollEffect_t)(p_data[4]);
         addMessage( &newMessage );
 
         displayMessage( &newMessage );

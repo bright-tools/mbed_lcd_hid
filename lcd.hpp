@@ -17,11 +17,11 @@ class LCDIf
     public:
         typedef enum
         {
-            ScrollEffectDefault,
-            ScrollEffectBackToStart,
-            ScrollEffectWrap,
-            ScrollEffectWrapWithSpace,
-            ScrollEffectReverseAtEnd
+            ScrollEffectDefault = 0,
+            ScrollEffectBackToStart = 1,
+            ScrollEffectWrap = 2,
+            ScrollEffectWrapWithSpace = 3,
+            ScrollEffectReverseAtEnd = 4
         } ScrollEffect_t;
     protected:
         bool newData;
@@ -60,6 +60,7 @@ class LCDIf
         void setString( unsigned p_row, const char* const p_data );
 
         void setPulsing( const bool p_pulse );
+        void setScrollEffect( const ScrollEffect_t p_effect );
 
         void refresh( void );
 };

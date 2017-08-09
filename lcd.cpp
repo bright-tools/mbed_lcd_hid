@@ -247,6 +247,11 @@ void LCDIf::setPulsing( const bool p_pulse )
 {
     pulsing = p_pulse;
 }
+
+void LCDIf::setScrollEffect( const ScrollEffect_t p_effect )
+{
+    currentScrollEffect = p_effect;
+}
         
 void LCDIf::setString( unsigned p_row, const char* const p_data )
 {
